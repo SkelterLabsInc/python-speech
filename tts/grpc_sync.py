@@ -16,10 +16,8 @@ import grpc_utils
 
 flags.DEFINE_string('api_url', 'aiq.skelterlabs.com:443', 'AIQ portal address.')
 flags.DEFINE_string('api_key', None, 'AIQ project api key.')
-flags.DEFINE_boolean('insecure', None,
-                     'Use plaintext and insecure connection.')
-flags.DEFINE_string('text', '안녕하세요. 스켈터랩스입니다.',
-                    'Input text to synthesize.')
+flags.DEFINE_boolean('insecure', None, 'Use plaintext and insecure connection.')
+flags.DEFINE_string('text', '안녕하세요. 스켈터랩스입니다.', 'Input text to synthesize.')
 flags.DEFINE_string('output_path', None, 'Output wav path.')
 FLAGS = flags.FLAGS
 

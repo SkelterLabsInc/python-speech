@@ -19,10 +19,8 @@ from poodle.tts.server.jimin import compat_google_grpc_pb2_grpc
 
 flags.DEFINE_string('api_url', 'aiq.skelterlabs.com:443', 'AIQ portal address.')
 flags.DEFINE_string('api_key', None, 'AIQ project api key.')
-flags.DEFINE_boolean('insecure', None,
-                     'Use plaintext and insecure connection.')
-flags.DEFINE_string('text', '안녕하세요. 스켈터랩스입니다.',
-                    'Input text to synthesize.')
+flags.DEFINE_boolean('insecure', None, 'Use plaintext and insecure connection.')
+flags.DEFINE_string('text', '안녕하세요. 스켈터랩스입니다.', 'Input text to synthesize.')
 flags.DEFINE_string('output_path', None, 'Output wav path.')
 FLAGS = flags.FLAGS
 
@@ -37,8 +35,7 @@ def main(args):
     synthesis_input = compat_google_grpc_pb2.SynthesisInput(text=FLAGS.text)
     voice = compat_google_grpc_pb2.VoiceSelectionParams(
         language_code='ko-KR', name='KO_KR_WOMAN_2')
-    audio_config = compat_google_grpc_pb2.AudioConfig(
-        audio_encoding='LINEAR16')
+    audio_config = compat_google_grpc_pb2.AudioConfig(audio_encoding='LINEAR16')
     request = compat_google_grpc_pb2.SynthesizeSpeechRequest(
         input=synthesis_input, voice=voice, audio_config=audio_config)
     responses = stub.StreamingSynthesizeSpeech(request)

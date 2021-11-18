@@ -23,12 +23,12 @@ import utils
 
 flags.DEFINE_string('api_url', 'aiq.skelterlabs.com:443', 'AIQ portal address.')
 flags.DEFINE_string('api_key', None, 'AIQ project api key.')
-flags.DEFINE_boolean('insecure', None,
-                     'Use plaintext and insecure connection.')
+flags.DEFINE_boolean('insecure', None, 'Use plaintext and insecure connection.')
 flags.DEFINE_string('audio_path', './resources/hello.wav', 'Input wav path.')
-flags.DEFINE_boolean('interim_results', False,
-                     'Stream request should return temporary results that '
-                     'may be refined at a later time.')
+flags.DEFINE_boolean(
+    'interim_results', False,
+    'Stream request should return temporary results that '
+    'may be refined at a later time.')
 flags.DEFINE_list('speech_context_phrases', None, 'Phrases for speech context')
 FLAGS = flags.FLAGS
 
@@ -66,7 +66,8 @@ def main(args):
 
     if FLAGS.speech_context_phrases:
         speech_contexts = [
-            speech.SpeechContext(phrases=FLAGS.speech_context_phrases)]
+            speech.SpeechContext(phrases=FLAGS.speech_context_phrases)
+        ]
     else:
         speech_contexts = None
     config = speech.RecognitionConfig(

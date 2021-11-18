@@ -26,8 +26,7 @@ import utils
 
 flags.DEFINE_string('api_url', 'aiq.skelterlabs.com:443', 'AIQ portal address.')
 flags.DEFINE_string('api_key', None, 'AIQ project api key.')
-flags.DEFINE_boolean('insecure', None,
-                     'Use plaintext and insecure connection.')
+flags.DEFINE_boolean('insecure', None, 'Use plaintext and insecure connection.')
 flags.DEFINE_string('audio_path', './resources/hello.wav', 'Input wav path.')
 FLAGS = flags.FLAGS
 
