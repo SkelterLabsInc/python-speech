@@ -28,9 +28,9 @@ import sys
 import librosa
 import numpy as np
 
-import grpc_utils
 from google.speech.v1 import cloud_speech_pb2
 from google.speech.v1 import cloud_speech_pb2_grpc
+import grpc_utils
 
 API_URL = os.environ.get('AIQ_API_URL', 'aiq.skelterlabs.com:443')
 API_KEY = os.environ.get('AIQ_API_KEY', '')  # Enter your API key here
