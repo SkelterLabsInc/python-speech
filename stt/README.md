@@ -6,7 +6,7 @@ so you can use
 to use AIQ.TALK STT API.
 
 This repository contains simple example CLI programs that recognizes the given
-`resources/.wav` audio file.
+`resources/.wav` audio file. Example usages can be found in [Colab example](https://colab.research.google.com/drive/1xT8vJnEcROI7a_4xA8E8sZtsK2_4lh9u#scrollTo=6pTb9KvAgV5E).
 
 ## Before you begin
 
