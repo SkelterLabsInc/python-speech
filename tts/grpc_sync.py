@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Dependencies:
-    python 3.7
+    python 3.8
 
 Usage:
     $ ./grpc_sync.py --api_key <AIQ api key> --output_path <test.wav>

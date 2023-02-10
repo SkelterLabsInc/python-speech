@@ -10,7 +10,7 @@ This repository contains simple example CLI programs that recognizes the given
 
 ## Before you begin
 
-Our examples are based on python 3.7 runtime.
+Our examples are based on python 3.8 runtime.
 
 Before running the examples, make sure you've followed the steps.
 

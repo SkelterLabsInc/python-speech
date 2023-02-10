@@ -3,7 +3,7 @@
 Experimental streaming example. (alpha)
 
 Dependencies:
-    python 3.7
+    python 3.8
 
 Usage:
     $ ./grpc_stream.py --api_key <AIQ api key> --output_path <test.wav>
