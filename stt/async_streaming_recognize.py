@@ -1,23 +1,29 @@
 #!/usr/bin/env python3
 """
 Dependencies:
-    python 3.8
+    - python 3.8
 
 The librosa requires libsndfile.
-    osx) brew install libsndfile
+    macOS) brew install libsndfile
     ubuntu) apt install libsndfile1
 
-Usage:
-    $ ./grpc_stream.py --api_key <AIQ api key>
-"""
+Before executing this script, you should compile protobuf files:
+    $ cd proto
+    $ make
 
-from absl import app
+Usage:
+    $ ./async_streaming_recognize.py --api_key <AIQ api key>
+"""
+from typing import Generator
+import sys
+import asyncio
+
 from absl import flags
-from google.cloud import speech
-from google.cloud.speech_v1.services.speech import transports
 import librosa
 import numpy as np
 
+from google.speech.v1 import cloud_speech_pb2
+from google.speech.v1 import cloud_speech_pb2_grpc
 import grpc_utils
 import utils
 
@@ -32,67 +38,73 @@ flags.DEFINE_boolean(
 flags.DEFINE_list('speech_context_phrases', None, 'Phrases for speech context')
 FLAGS = flags.FLAGS
 
+SR = 16000
 
-def generate_requests(audio_path, chunk_size=1024):
+
+def generate_requests(
+    audio_path: str,
+    config: cloud_speech_pb2.StreamingRecognitionConfig,
+    chunk_size: int = 1024
+) -> Generator[cloud_speech_pb2.StreamingRecognizeRequest, None, None]:
     """Generate chunks of 16kHz audio encoded as LINEAR16.
 
     Args:
         audio_path: Audio file path.
+        config: StreamingRecognitionConfig object.
         chunk_size: Size of each chunk in bytes.
 
     Yields:
         StreamingRecognizeRequest objects.
     """
-    content, sample_rate = librosa.load(audio_path, sr=16000)
+    assert config is not None, 'StreamingRecognitionConfig should be given'
+    # The first request should hold config only.
+    yield cloud_speech_pb2.StreamingRecognizeRequest(streaming_config=config)
+
+    content, sample_rate = librosa.load(audio_path, sr=SR)
     del sample_rate
     if content.dtype in (np.float32, np.float64):
         content = (content * np.iinfo(np.int16).max).astype(np.int16)
     content = content.tobytes()
 
     for from_idx in range(0, len(content), chunk_size):
-        yield speech.StreamingRecognizeRequest(
+        yield cloud_speech_pb2.StreamingRecognizeRequest(
             audio_content=content[from_idx:from_idx + chunk_size])
 
 
-def main(args):
-    del args  # Unused
-
-    channel = grpc_utils.create_channel(
+async def main():
+    channel = grpc_utils.create_aio_channel(
         FLAGS.api_url, api_key=FLAGS.api_key, insecure=FLAGS.insecure)
-    transport = transports.SpeechGrpcTransport(channel=channel)
-    client = speech.SpeechClient(transport=transport)
 
-    requests = generate_requests(FLAGS.audio_path)
+    stub = cloud_speech_pb2_grpc.SpeechStub(channel)
 
     if FLAGS.speech_context_phrases:
         speech_contexts = [
-            speech.SpeechContext(phrases=FLAGS.speech_context_phrases)
+            cloud_speech_pb2.SpeechContext(phrases=FLAGS.speech_context_phrases)
         ]
     else:
         speech_contexts = None
-    config = speech.RecognitionConfig(
+    config = cloud_speech_pb2.RecognitionConfig(
         enable_word_time_offsets=True,
-        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+        # pylint: disable=no-member
+        encoding=cloud_speech_pb2.RecognitionConfig.AudioEncoding.LINEAR16,
         language_code='ko-KR',
         sample_rate_hertz=16000,
         speech_contexts=speech_contexts,
     )
-    streaming_config = speech.StreamingRecognitionConfig(
+    streaming_config = cloud_speech_pb2.StreamingRecognitionConfig(
         config=config,
         interim_results=FLAGS.interim_results,
     )
 
-    # streaming_recognize() returns a generator of responses.
-    responses = client.streaming_recognize(streaming_config, requests)
+    request_generator = generate_requests(FLAGS.audio_path, streaming_config)
+    response_generator = stub.StreamingRecognize(request_generator)
 
-    for response in responses:
-        # Once the transcription has settled, the first result will contain the
-        # is_final result. The other results will be for subsequent portions of
-        # the audio.
+    async for response in response_generator:
         for result in response.results:
             print(f'Finished: {result.is_final}')
             utils.print_recognition_result(result)
 
 
 if __name__ == '__main__':
-    app.run(main)
+    FLAGS(sys.argv)
+    asyncio.run(main())

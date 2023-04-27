@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 """
 Dependencies:
-    python 3.8
+    - python 3.8
 
 The librosa requires libsndfile.
     macOS) brew install libsndfile
     ubuntu) apt install libsndfile1
 
+Before executing this script, you should compile protobuf files:
+    $ cd proto
+    $ make
+
 Usage:
-    $ ./pure_grpc_stream.py --api_key <AIQ api key>
+    $ ./streaming_recognize.py --api_key <AIQ api key>
 """
 from typing import Generator
 

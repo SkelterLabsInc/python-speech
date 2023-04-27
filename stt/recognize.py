@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 """
 Dependencies:
-    python 3.8
+    - python 3.8
 
 The librosa requires libsndfile.
-    osx) brew install libsndfile
+    macOS) brew install libsndfile
     ubuntu) apt install libsndfile1
 
+Before executing this script, you should compile protobuf files:
+    $ cd proto
+    $ make
+
 Usage:
-    $ ./grpc_sync.py --api_key <AIQ api key>
+    $ ./recognize.py --api_key <AIQ api key>
 
 NOTE:
     - Input audio duration is less than or equal to 60 seconds.
@@ -16,13 +20,12 @@ NOTE:
 
 from absl import app
 from absl import flags
-from google.cloud import speech
-from google.cloud.speech_v1.services.speech import transports
 import librosa
 import numpy as np
 
+from google.speech.v1 import cloud_speech_pb2
+from google.speech.v1 import cloud_speech_pb2_grpc
 import grpc_utils
-import utils
 
 flags.DEFINE_string('api_url', 'aiq.skelterlabs.com:443', 'AIQ portal address.')
 flags.DEFINE_string('api_key', None, 'AIQ project api key.')
@@ -44,7 +47,7 @@ def make_audio(audio_path):
     del sample_rate
     if content.dtype in (np.float32, np.float64):
         content = (content * np.iinfo(np.int16).max).astype(np.int16)
-    return speech.RecognitionAudio(content=content.tobytes())
+    return cloud_speech_pb2.RecognitionAudio(content=content.tobytes())
 
 
 def main(args):
@@ -52,21 +55,25 @@ def main(args):
 
     channel = grpc_utils.create_channel(
         FLAGS.api_url, api_key=FLAGS.api_key, insecure=FLAGS.insecure)
-    transport = transports.SpeechGrpcTransport(channel=channel)
-    client = speech.SpeechClient(transport=transport)
+    stub = cloud_speech_pb2_grpc.SpeechStub(channel)
 
     audio = make_audio(FLAGS.audio_path)
 
-    config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-        language_code='ko-KR',
+    # pylint: disable=no-member
+    config = cloud_speech_pb2.RecognitionConfig(
+        encoding=cloud_speech_pb2.RecognitionConfig.AudioEncoding.LINEAR16,
         sample_rate_hertz=16000,
-    )
-
-    response = client.recognize(config=config, audio=audio)
+        language_code='ko-KR')
+    # pylint: enable=no-member
+    request = cloud_speech_pb2.RecognizeRequest(config=config, audio=audio)
+    response = stub.Recognize(request)
 
     for result in response.results:
-        utils.print_recognition_result(result)
+        # The alternatives are ordered from most likely to least.
+        for i, alternative in enumerate(result.alternatives):
+            print(f'Alternatives[{i}]')
+            print(f'  Confidence[{i}]: {alternative.confidence}')
+            print(f'  Transcript[{i}]: {alternative.transcript}')
 
 
 if __name__ == '__main__':

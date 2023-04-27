@@ -1,5 +1,4 @@
 absl-py==0.12.0
-google-cloud-speech==2.17.3
 grpcio==1.42.0
 grpcio-tools==1.42.0
 librosa==0.8.0

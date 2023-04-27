@@ -1,10 +1,5 @@
 # AIQ.TALK STT Python Example
 
-The AIQ.TALK STT API is mostly compatible with the Google Cloud Speech API,
-so you can use
-[Google Cloud Speech Python Client](https://github.com/googleapis/python-speech)
-to use AIQ.TALK STT API.
-
 This repository contains simple example CLI programs that recognizes the given
 `resources/hello.wav` audio file. Example usages can be found in [Colab example](https://colab.research.google.com/drive/1xT8vJnEcROI7a_4xA8E8sZtsK2_4lh9u#scrollTo=6pTb9KvAgV5E).
 
@@ -37,7 +32,7 @@ Perform synchronous transcription on a local audio file.
 Synchronous request supports ~1 minute audio length.
 
 ```shell
-$ ./grpc_sync.py --api-key=<your API key>
+$ ./recognize.py --api-key=<your API key>
 ```
 
 ### Streaming speech recognition
@@ -45,5 +40,5 @@ $ ./grpc_sync.py --api-key=<your API key>
 Perform streaming request on a local audio file.
 
 ```shell
-$ ./grpc_stream.py --api-key=<your API key>
+$ ./streaming_recognize.py --api-key=<your API key>
 ```

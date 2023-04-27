@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 """
 Dependencies:
-    - python 3.6
-    - google-cloud-speech==2.0.1
-    - librosa==0.7.1
-    - numpy==1.17.0
+    - python 3.8
 
 The librosa requires libsndfile.
-    osx) brew install libsndfile
+    macOS) brew install libsndfile
     ubuntu) apt install libsndfile1
 
 Before executing this script, you should compile protobuf files:
@@ -15,26 +12,28 @@ Before executing this script, you should compile protobuf files:
     $ make
 
 Usage:
-    $ export AIQ_API_KEY="YOUR API KEY HERE"
-    $ ./pure_grpc_sync.py <AUDIO file path>
+    $ ./recognize_timestamp.py --api_key <AIQ api key>
 
 NOTE:
     - Input audio duration is less than or equal to 60 seconds.
 """
+import datetime
 
-import os
-import sys
-
+from absl import app
+from absl import flags
 import librosa
 import numpy as np
 
 from google.speech.v1 import cloud_speech_pb2
 from google.speech.v1 import cloud_speech_pb2_grpc
 import grpc_utils
+import utils
 
-API_URL = os.environ.get('AIQ_API_URL', 'aiq.skelterlabs.com:443')
-API_KEY = os.environ.get('AIQ_API_KEY', '')  # Enter your API key here
-INSECURE = os.environ.get('INSECURE')
+flags.DEFINE_string('api_url', 'aiq.skelterlabs.com:443', 'AIQ portal address.')
+flags.DEFINE_string('api_key', None, 'AIQ project api key.')
+flags.DEFINE_boolean('insecure', None, 'Use plaintext and insecure connection.')
+flags.DEFINE_string('audio_path', './resources/hello.wav', 'Input wav path.')
+FLAGS = flags.FLAGS
 
 
 def make_audio(audio_path):
@@ -53,34 +52,37 @@ def make_audio(audio_path):
     return cloud_speech_pb2.RecognitionAudio(content=content.tobytes())
 
 
+def time_to_second(time_info):
+    """Convert time_info to seconds."""
+    if isinstance(time_info, datetime.timedelta):
+        return time_info.total_seconds()
+    return time_info.seconds + time_info.nanos / 1e9
+
+
 def main(args):
-    if len(args) != 2:
-        print(f'Usage: {args[0]} <Audio file path>', file=sys.stderr)
-        sys.exit(1)
+    del args  # Unused
 
     channel = grpc_utils.create_channel(
-        API_URL, api_key=API_KEY, insecure=INSECURE)
+        FLAGS.api_url, api_key=FLAGS.api_key, insecure=FLAGS.insecure)
     stub = cloud_speech_pb2_grpc.SpeechStub(channel)
 
-    audio_path = args[1]
-    audio = make_audio(audio_path)
+    audio = make_audio(FLAGS.audio_path)
 
     # pylint: disable=no-member
     config = cloud_speech_pb2.RecognitionConfig(
         encoding=cloud_speech_pb2.RecognitionConfig.AudioEncoding.LINEAR16,
         sample_rate_hertz=16000,
-        language_code='ko-KR')
+        language_code='ko-KR',
+        # Below option is required for timestamp
+        enable_word_time_offsets=True)
     # pylint: enable=no-member
     request = cloud_speech_pb2.RecognizeRequest(config=config, audio=audio)
     response = stub.Recognize(request)
 
     for result in response.results:
         # The alternatives are ordered from most likely to least.
-        for i, alternative in enumerate(result.alternatives):
-            print(f'Alternatives[{i}]')
-            print(f'  Confidence[{i}]: {alternative.confidence}')
-            print(f'  Transcript[{i}]: {alternative.transcript}')
+        utils.print_recognition_result(result)
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    app.run(main)
