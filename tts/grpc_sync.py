@@ -9,10 +9,10 @@ Usage:
 
 from absl import app
 from absl import flags
-from google.cloud import texttospeech
-from google.cloud.texttospeech_v1.services.text_to_speech import transports
 
 import grpc_utils
+from google.cloud.texttospeech.v1 import cloud_tts_pb2
+from google.cloud.texttospeech.v1 import cloud_tts_pb2_grpc
 
 flags.DEFINE_string('api_url', 'aiq.skelterlabs.com:443', 'AIQ portal address.')
 flags.DEFINE_string('api_key', None, 'AIQ project api key.')
@@ -27,16 +27,15 @@ def main(args):
 
     channel = grpc_utils.create_channel(
         FLAGS.api_url, api_key=FLAGS.api_key, insecure=FLAGS.insecure)
-    transport = transports.TextToSpeechGrpcTransport(channel=channel)
-    client = texttospeech.TextToSpeechClient(transport=transport)
+    stub = cloud_tts_pb2_grpc.TextToSpeechStub(channel)
 
-    synthesis_input = texttospeech.SynthesisInput(text=FLAGS.text)
-    voice = texttospeech.VoiceSelectionParams(
+    synthesis_input = cloud_tts_pb2.SynthesisInput(text=FLAGS.text)
+    voice = cloud_tts_pb2.VoiceSelectionParams(
         language_code='ko-KR', name='KO_KR_WOMAN_2')
-    audio_config = texttospeech.AudioConfig(
-        audio_encoding=texttospeech.AudioEncoding.LINEAR16)
-    response = client.synthesize_speech(
+    audio_config = cloud_tts_pb2.AudioConfig(audio_encoding='LINEAR16')
+    request = cloud_tts_pb2.SynthesizeSpeechRequest(
         input=synthesis_input, voice=voice, audio_config=audio_config)
+    response = stub.SynthesizeSpeech(request)
     with open(FLAGS.output_path, mode='wb') as output_file:
         output_file.write(response.audio_content)
 

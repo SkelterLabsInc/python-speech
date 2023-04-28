@@ -1,10 +1,6 @@
 # AIQ.TALK TTS Python Example
 
-The AIQ.TALK TTS API is mostly compatible with the Google Cloud Text-to-Speech
-API, so you can use
-[Google Cloud Text-to-Speech Client](https://github.com/googleapis/python-texttospeech)
-to use AIQ.TALK TTS API.
-
+This repository contains simple example CLI programs that synthesizes the given input text into an audio file.
 
 ## Before you begin
 
@@ -14,6 +10,7 @@ Before running the examples, make sure you've followed the steps.
 
 ```shell
 $ pip install -U -r ./requirements.txt
+$ cd proto && make
 ```
 
 Get your AIQ API key from the
