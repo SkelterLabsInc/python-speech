@@ -116,6 +116,26 @@ enum AudioEncoding {
   // 8-bit samples that compand 14-bit audio samples using G.711 PCMU/A-law.
   // Audio content returned as ALAW also contains a WAV header.
   ALAW = 6;
+
+  // NOTE(jinhyeonkim): MODIFICATION STARTS =========
+  // Minji-specific PCM
+  // LINEAR16 PCM but without a WAV header.
+  LINEAR16_PCM = 102;
+
+  // MULAW PCM but without a WAV header.
+  MULAW_PCM = 103;
+
+  // ALAW PCM but without a WAV header.
+  ALAW_PCM = 104;
+
+  // 4-bit sample differentials that adaptively varies the quantization size.
+  ADPCM = 105;
+
+  // Minji-specific WAV
+  // Uncompressed 8-bit unsigned samples (Linear PCM).
+  // Audio content returned as LINEAR8 also contains a WAV header.
+  LINEAR8 = 111;
+  // NOTE(jinhyeonkim): MODIFICATION ENDS =========
 }
 
 // The top-level message sent by the client for the `ListVoices` method.
