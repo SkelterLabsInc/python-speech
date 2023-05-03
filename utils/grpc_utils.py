@@ -1,6 +1,7 @@
 """Utility grpc functions."""
 
 import os
+from typing import List, Optional, Tuple, Union
 
 import grpc
 from grpc import aio
@@ -66,13 +67,10 @@ class GenericClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         return postprocess(response_it) if postprocess else response_it
 
 
-class AsyncGenericClientInterceptor(aio.StreamStreamClientInterceptor,
-                                    aio.StreamUnaryClientInterceptor,
-                                    aio.UnaryStreamClientInterceptor,
-                                    aio.UnaryUnaryClientInterceptor):
-    """
-    This is adaptor for aio client interceptors.
-    """
+# NOTE(jinhyeonkim): grpc.aio.Channel does not recognize generic interceptor as
+# GenericClientInterceptor. Refer to https://github.com/grpc/grpc/issues/31442
+# TODO(jinhyeonkim): revert to generic approach when this issue resolves.
+class AsyncUnaryUnaryClientInterceptor(aio.UnaryUnaryClientInterceptor):
 
     def __init__(self, interceptor_function):
         # pylint: disable=super-init-not-called
@@ -82,37 +80,65 @@ class AsyncGenericClientInterceptor(aio.StreamStreamClientInterceptor,
                                     request):
         new_details, new_request_iterator, postprocess = self._fn(
             client_call_details, iter((request,)), False, False)
-        response = continuation(new_details, next(new_request_iterator))
+        response = await continuation(new_details, next(new_request_iterator))
         return postprocess(response) if postprocess else response
+
+
+class AsyncUnaryStreamClientInterceptor(aio.UnaryStreamClientInterceptor):
+
+    def __init__(self, interceptor_function):
+        # pylint: disable=super-init-not-called
+        self._fn = interceptor_function
 
     async def intercept_unary_stream(self, continuation, client_call_details,
                                      request):
         new_details, new_request_iterator, postprocess = self._fn(
             client_call_details, iter((request,)), False, True)
-        response_it = continuation(new_details, next(new_request_iterator))
+        response_it = await continuation(new_details,
+                                         next(new_request_iterator))
         return postprocess(response_it) if postprocess else response_it
+
+
+class AsyncStreamUnaryClientInterceptor(aio.StreamUnaryClientInterceptor):
+
+    def __init__(self, interceptor_function):
+        # pylint: disable=super-init-not-called
+        self._fn = interceptor_function
 
     async def intercept_stream_unary(self, continuation, client_call_details,
                                      request_iterator):
         new_details, new_request_iterator, postprocess = self._fn(
             client_call_details, request_iterator, True, False)
-        response = continuation(new_details, new_request_iterator)
+        response = await continuation(new_details, new_request_iterator)
         return postprocess(response) if postprocess else response
+
+
+class AsyncStreamStreamClientInterceptor(aio.StreamStreamClientInterceptor):
+
+    def __init__(self, interceptor_function):
+        # pylint: disable=super-init-not-called
+        self._fn = interceptor_function
 
     async def intercept_stream_stream(self, continuation, client_call_details,
                                       request_iterator):
         new_details, new_request_iterator, postprocess = self._fn(
             client_call_details, request_iterator, True, True)
-        response_it = continuation(new_details, new_request_iterator)
+        response_it = await continuation(new_details, new_request_iterator)
         return postprocess(response_it) if postprocess else response_it
 
 
-def additional_headers_interceptor(headers, is_aio=False):
+def additional_headers_interceptors(
+    headers: List[Tuple[str, Union[str, bytes]]],
+    is_aio: bool = False,
+):
     """Return interceptor which adds given headers to each calls.
 
     Args:
         headers: The list of header name, header value pair.
-        is_aio: a flag if interceptor is for aio
+        is_aio: A flag indicating if interceptor is for aio.
+
+    Returns:
+        List of interceptors.
     """
 
     def _intercept_call(client_call_details, request_iterator,
@@ -126,12 +152,17 @@ def additional_headers_interceptor(headers, is_aio=False):
         client_call_details = client_call_details._replace(metadata=metadata)
         return client_call_details, request_iterator, None
 
-    if is_aio:
-        return AsyncGenericClientInterceptor(_intercept_call)
-    return GenericClientInterceptor(_intercept_call)
+    if not is_aio:
+        return [GenericClientInterceptor(_intercept_call)]
+    return [
+        AsyncUnaryUnaryClientInterceptor(_intercept_call),
+        AsyncUnaryStreamClientInterceptor(_intercept_call),
+        AsyncStreamUnaryClientInterceptor(_intercept_call),
+        AsyncStreamStreamClientInterceptor(_intercept_call),
+    ]
 
 
-def create_credentials(api_key):
+def create_credentials(api_key: Optional[str]) -> grpc.ChannelCredentials:
     """Create a ChannelCredentials that authenticates to AIQ via an API key.
 
     Args:
@@ -155,10 +186,12 @@ def create_credentials(api_key):
                                               call_credentials)
 
 
-def create_channel(api_url,
-                   api_key=None,
-                   insecure=None,
-                   additional_headers=None):
+def create_channel(
+    api_url: str,
+    api_key: Optional[str] = None,
+    insecure: Optional[bool] = None,
+    additional_headers: Optional[List[Tuple[str, Union[str, bytes]]]] = None,
+) -> grpc.Channel:
     """Create gRPC channel.
 
     Args:
@@ -167,7 +200,7 @@ def create_channel(api_url,
         insecure: Skip server certificate and domain verification.
             If it is None and api_key is specified, insecure is False.
             If it is None and api_key is unspecified, insecure is True.
-        additional_headers: header for intercepting key
+        additional_headers: custom headers
 
     Returns:
         grpc.Channel
@@ -189,14 +222,16 @@ def create_channel(api_url,
     if not additional_headers:
         return channel
 
-    interceptor = additional_headers_interceptor(additional_headers)
-    return grpc.intercept_channel(channel, interceptor)
+    interceptors = additional_headers_interceptors(additional_headers)
+    return grpc.intercept_channel(channel, *interceptors)
 
 
-def create_aio_channel(api_url,
-                       api_key=None,
-                       insecure=None,
-                       additional_headers=None):
+def create_aio_channel(
+    api_url: str,
+    api_key: Optional[str] = None,
+    insecure: Optional[bool] = None,
+    additional_headers: Optional[List[Tuple[str, Union[str, bytes]]]] = None,
+) -> aio.Channel:
     """Create aio gRPC channel.
 
     Args:
@@ -210,25 +245,22 @@ def create_aio_channel(api_url,
     Returns:
         grpc.aio.Channel
     """
-    if additional_headers is None:
-        additional_headers = []
-
     if insecure is None:
         insecure = not bool(api_key)
 
+    if additional_headers is None:
+        additional_headers = []
+
+    if insecure and api_key:
+        additional_headers.append(('x-api-key', api_key))
+
+    interceptors = []
+    if additional_headers:
+        interceptors.extend(
+            additional_headers_interceptors(additional_headers, is_aio=True))
+
     if insecure:
-        interceptor = None
-        if api_key:
-            additional_headers.append(('x-api-key', api_key))
-            interceptor = additional_headers_interceptor(
-                additional_headers, True)
+        return aio.insecure_channel(api_url, interceptors=interceptors)
 
-        if interceptor:
-            channel = aio.insecure_channel(api_url, interceptors=[interceptor])
-        else:
-            channel = aio.insecure_channel(api_url)
-    else:
-        credentials = create_credentials(api_key)
-        channel = aio.secure_channel(api_url, credentials)
-
-    return channel
+    credentials = create_credentials(api_key)
+    return aio.secure_channel(api_url, credentials, interceptors=interceptors)
