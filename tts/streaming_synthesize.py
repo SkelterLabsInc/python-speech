@@ -6,7 +6,7 @@ Dependencies:
     python 3.8
 
 Usage:
-    $ ./grpc_stream.py --api_key <AIQ api key> --output_path <test.wav>
+    $ ./streaming_synthesize.py --api_key <AIQ api key> --output_path <test.wav>
 """
 
 from absl import app

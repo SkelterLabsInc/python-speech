@@ -4,7 +4,7 @@ Dependencies:
     python 3.8
 
 Usage:
-    $ ./grpc_sync.py --api_key <AIQ api key> --output_path <test.wav>
+    $ ./synthesize.py --api_key <AIQ api key> --output_path <test.wav>
 """
 
 from absl import app

@@ -21,7 +21,7 @@ Get your AIQ API key from the
 ### Synchronously synthesize text to speech.
 
 ```shell
-$ ./grpc_sync.py --api-key=<your API key> --output_path <test.wav>
+$ ./synthesize.py --api-key=<your API key> --output_path <test.wav>
 ```
 
 ### Streaming synthesize text to speech. (alpha)
@@ -29,5 +29,5 @@ $ ./grpc_sync.py --api-key=<your API key> --output_path <test.wav>
 We offer streaming synthesis for reducing latency of our engine.
 
 ```shell
-$ ./grpc_stream.py --api-key=<your API key> --output_path <test.wav>
+$ ./streaming_synthesize.py --api-key=<your API key> --output_path <test.wav>
 ```
