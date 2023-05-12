@@ -1,4 +1,4 @@
-# AIQ.TALK TTS Python Example
+# AIQ.TTS Python Example
 
 This repository contains simple example CLI programs that synthesizes the given input text into an audio file.
 

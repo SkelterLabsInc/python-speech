@@ -1,3 +1,3 @@
-# AIQ.TALK Speech Python Example
+# AIQ.STT & AIQ.TTS Python Example
 
-The AIQ.TALK Speech (STT/TTS) API examples for Python.
+The AIQ.STT & AIQ.TTS API examples for Python.

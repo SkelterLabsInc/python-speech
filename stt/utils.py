@@ -1,4 +1,4 @@
-"""Utilities for our STT APIs."""
+"""Utilities for AIQ.STT APIs."""
 
 import datetime
 import sys
