@@ -32,7 +32,7 @@ Perform synchronous transcription on a local audio file.
 Synchronous request supports ~1 minute audio length.
 
 ```shell
-$ ./recognize.py --api-key=<your API key>
+$ python recognize.py --api-key=<your API key>
 ```
 
 ### Streaming speech recognition
@@ -40,5 +40,5 @@ $ ./recognize.py --api-key=<your API key>
 Perform streaming request on a local audio file.
 
 ```shell
-$ ./streaming_recognize.py --api-key=<your API key>
+$ python streaming_recognize.py --api-key=<your API key>
 ```

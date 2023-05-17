@@ -21,7 +21,7 @@ Get your AIQ API key from the
 ### Synchronously synthesize text to speech.
 
 ```shell
-$ ./synthesize.py --api-key=<your API key> --output_path <test.wav>
+$ python synthesize.py --api-key=<your API key> --output_path <test.wav>
 ```
 
 ### Streaming synthesize text to speech. (alpha)
@@ -29,5 +29,5 @@ $ ./synthesize.py --api-key=<your API key> --output_path <test.wav>
 We offer streaming synthesis for reducing latency of our engine.
 
 ```shell
-$ ./streaming_synthesize.py --api-key=<your API key> --output_path <test.wav>
+$ python streaming_synthesize.py --api-key=<your API key> --output_path <test.wav>
 ```
