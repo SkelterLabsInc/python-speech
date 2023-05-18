@@ -4,7 +4,7 @@ Dependencies:
     python 3.8
 
 Usage:
-    $ ./synthesize.py --api_key <AIQ api key> --output_path <test.wav>
+    $ python synthesize.py --api_key <AIQ api key> --output_path <test.wav>
 """
 
 from absl import app

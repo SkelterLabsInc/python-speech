@@ -12,7 +12,7 @@ Before executing this script, you should compile protobuf files:
     $ make
 
 Usage:
-    $ ./recognize_timestamp.py --api_key <AIQ api key>
+    $ python recognize_timestamp.py --api_key <AIQ api key>
 
 NOTE:
     - Input audio duration is less than or equal to 60 seconds.

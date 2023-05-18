@@ -12,7 +12,7 @@ Before executing this script, you should compile protobuf files:
     $ make
 
 Usage:
-    $ ./async_streaming_recognize.py --api_key <AIQ api key>
+    $ python async_streaming_recognize.py --api_key <AIQ api key>
 """
 from typing import Generator
 import sys
