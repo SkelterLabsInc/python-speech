@@ -5,6 +5,10 @@ Experimental streaming example. (alpha)
 Dependencies:
     python 3.8
 
+Before executing this script, you should compile protobuf files:
+    $ cd proto
+    $ make
+
 Usage:
     $ python streaming_synthesize.py \\
         --api_key <AIQ api key> --output_path <test.wav>
@@ -13,9 +17,9 @@ Usage:
 from absl import app
 from absl import flags
 
-import grpc_utils
 from google.cloud.texttospeech.v1 import cloud_tts_pb2
 from google.cloud.texttospeech.v1 import cloud_tts_pb2_grpc
+import grpc_utils
 
 flags.DEFINE_string('api_url', 'aiq.skelterlabs.com:443', 'AIQ portal address.')
 flags.DEFINE_string('api_key', None, 'AIQ project api key.')
