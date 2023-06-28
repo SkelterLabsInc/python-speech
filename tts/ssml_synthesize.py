@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""
+r"""
 Dependencies:
     python 3.8
 
@@ -8,7 +8,10 @@ Before executing this script, you should compile protobuf files:
     $ make
 
 Usage:
-    $ python synthesize.py --api_key <AIQ api key> --output_path <test.wav>
+    $ python ssml_synthesize.py \
+        --api_key <AIQ api key> \
+        --input_path <test.ssml> \
+        --output_path <test.wav>
 """
 
 from absl import app
@@ -21,7 +24,7 @@ import grpc_utils
 flags.DEFINE_string('api_url', 'aiq.skelterlabs.com:443', 'AIQ portal address.')
 flags.DEFINE_string('api_key', None, 'AIQ project api key.')
 flags.DEFINE_boolean('insecure', None, 'Use plaintext and insecure connection.')
-flags.DEFINE_string('text', '안녕하세요. 스켈터랩스입니다.', 'Input text to synthesize.')
+flags.DEFINE_string('input_path', None, 'Input SSML file path.')
 flags.DEFINE_string('output_path', None, 'Output wav path.')
 FLAGS = flags.FLAGS
 
@@ -33,7 +36,10 @@ def main(args):
         FLAGS.api_url, api_key=FLAGS.api_key, insecure=FLAGS.insecure)
     stub = cloud_tts_pb2_grpc.TextToSpeechStub(channel)
 
-    synthesis_input = cloud_tts_pb2.SynthesisInput(text=FLAGS.text)
+    with open(FLAGS.input_path, 'r', encoding='utf-8') as input_file:
+        input_content = input_file.read()
+
+    synthesis_input = cloud_tts_pb2.SynthesisInput(ssml=input_content)
     voice = cloud_tts_pb2.VoiceSelectionParams(
         language_code='ko-KR', name='KO_KR_WOMAN_2')
     audio_config = cloud_tts_pb2.AudioConfig(audio_encoding='LINEAR16')
@@ -45,5 +51,5 @@ def main(args):
 
 
 if __name__ == '__main__':
-    flags.mark_flags_as_required(['output_path'])
+    flags.mark_flags_as_required(['input_path', 'output_path'])
     app.run(main)
