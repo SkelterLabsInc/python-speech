@@ -11,6 +11,7 @@ Before running the examples, make sure you've followed the steps.
 
 ```shell
 $ pip install -U -r ./requirements.txt
+$ cd proto && make
 ```
 
 If you want to use `resources/hello.wav`, you should run the following command:
