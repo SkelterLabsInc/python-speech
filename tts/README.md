@@ -52,3 +52,16 @@ $ python streaming_synthesize.py \
     --text '안녕하세요?' \
     --output_path <test.wav>
 ```
+
+### Synthesize speech with SSML
+
+AIQ.TTS supports pitch, speed, and volume configuration with
+[SSML](https://en.wikipedia.org/wiki/Speech_Synthesis_Markup_Language) input.
+
+```shell
+$ echo '<speak>SSML 예제</speak>' >/path/to/test.ssml
+$ python ssml_synthesize.py \
+    --api_key <AIQ api key> \
+    --input_path /path/to/test.ssml \
+    --output_path /path/to/test.wav
+```

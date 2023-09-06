@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""
+r"""
 Experimental streaming example. (alpha)
 
 Dependencies:
@@ -10,8 +10,10 @@ Before executing this script, you should compile protobuf files:
     $ make
 
 Usage:
-    $ python streaming_synthesize.py \\
-        --api_key <AIQ api key> --output_path <test.wav>
+    $ python streaming_synthesize.py \
+        --api_key <your API key> \
+        --text '안녕하세요?' \
+        --output_path <test.wav>
 """
 
 from absl import app

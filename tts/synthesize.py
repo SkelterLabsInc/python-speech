@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""
+r"""
 Dependencies:
     python 3.8
 
@@ -8,7 +8,19 @@ Before executing this script, you should compile protobuf files:
     $ make
 
 Usage:
-    $ python synthesize.py --api_key <AIQ api key> --output_path <test.wav>
+    $ python synthesize.py \
+        --api_key <your API key> \
+        --text '안녕하세요?' \
+        --output_path <test.wav>
+
+    If you want other audio format (e.g. ALAW, ADPCM, ...), specify
+    `--audio_encoding` flag.
+
+    $ python synthesize.py \
+        --api_key <your API key> \
+        --text '안녕하세요?' \
+        --audio_encoding ADPCM \
+        --output_path <test.vox>
 """
 
 from absl import app
