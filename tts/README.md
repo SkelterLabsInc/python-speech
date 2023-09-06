@@ -20,8 +20,26 @@ Get your AIQ API key from the
 
 ### Synchronously synthesize text to speech.
 
+To synthesize wav file, run the following:
+
 ```shell
-$ python synthesize.py --api-key=<your API key> --output_path <test.wav>
+$ python synthesize.py \
+    --api_key <your API key> \
+    --text '안녕하세요?' \
+    --output_path <test.wav>
+```
+
+If you want other audio format (e.g. ALAW, ADPCM, ...), specify
+`--audio_encoding` flag. For the complete list of supported formats, see
+`AudioEncoding` in the
+[protobuf file](./proto/google/cloud/texttospeech/v1/cloud_tts.proto).
+
+```shell
+$ python synthesize.py \
+    --api_key <your API key> \
+    --text '안녕하세요?' \
+    --audio_encoding ADPCM \
+    --output_path <test.vox>
 ```
 
 ### Streaming synthesize text to speech. (alpha)
@@ -29,5 +47,8 @@ $ python synthesize.py --api-key=<your API key> --output_path <test.wav>
 We offer streaming synthesis for reducing latency of our engine.
 
 ```shell
-$ python streaming_synthesize.py --api-key=<your API key> --output_path <test.wav>
+$ python streaming_synthesize.py \
+    --api_key <your API key> \
+    --text '안녕하세요?' \
+    --output_path <test.wav>
 ```
