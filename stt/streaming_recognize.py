@@ -35,9 +35,6 @@ flags.DEFINE_boolean(
     'Stream request should return temporary results that '
     'may be refined at a later time.')
 flags.DEFINE_list('speech_context_phrases', None, 'Phrases for speech context')
-flags.DEFINE_string('speech_context_id', None, 'Speech context ID to apply')
-flags.DEFINE_string('substitution_rule_id', None, 'Substitution rule ID to '
-                    'apply')
 FLAGS = flags.FLAGS
 
 
@@ -90,8 +87,6 @@ def main(args):
         language_code='ko-KR',
         sample_rate_hertz=16000,
         speech_contexts=speech_contexts,
-        speech_context_id=FLAGS.speech_context_id,
-        substitution_rule_id=FLAGS.substitution_rule_id,
     )
     streaming_config = cloud_speech_pb2.StreamingRecognitionConfig(
         config=config,
